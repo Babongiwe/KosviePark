@@ -36,8 +36,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     vehicle_lookup: 'Vehicle Lookup',
     grace_periods: 'Active Grace Periods',
     violations: 'Violations & Fines',
-    visitor_portal: 'Visitor Pre-Registration',
-    visitor_lookup: 'Visitor Pass Lookup',
+    visitor_portal: 'Request Temporary Permit',
+    visitor_lookup: 'My Request & Pass',
     profile: 'Account Profile',
     notifications: 'Notifications',
   };

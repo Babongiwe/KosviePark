@@ -438,6 +438,28 @@ export const mockApplications: PermitApplication[] = [
 
 export const mockVisitorReservations: VisitorReservation[] = [
   {
+    id: 'vis-res-pending-1',
+    reservationCode: 'VIS-2026-9012',
+    requesterId: 'usr-visitor-1',
+    visitorName: 'Thandi Mokoena',
+    visitorEmail: 'thandi.mokoena@gmail.com',
+    visitorPhone: '+27 72 555 0192',
+    visitorType: 'Parent / Guardian',
+    vehicleRegistration: 'BFN 221 FS',
+    vehicleMakeModel: 'VW Polo (Blue)',
+    hostPerson: 'Student Affairs',
+    hostDepartment: 'Dean of Students',
+    purpose: 'Campus tour with prospective student',
+    campus: 'Bloemfontein Main Campus',
+    visitDate: '2026-10-12',
+    startTime: '09:00',
+    endTime: '12:00',
+    assignedBayNumber: '',
+    qrCodeData: '',
+    status: 'pending',
+    createdAt: '2026-10-05T08:00:00Z',
+  },
+  {
     id: 'vis-res-0',
     reservationCode: 'VIS-2026-8805',
     visitorName: 'Dr Lerato Khumalo',
