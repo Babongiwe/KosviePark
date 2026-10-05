@@ -5,7 +5,6 @@ import {
   Search,
   Timer,
   AlertOctagon,
-  UserPlus,
   MapPin,
   Bell,
   Shield,
@@ -44,12 +43,6 @@ export const SecurityDashboard: React.FC = () => {
       description: 'Issue and manage campus parking citations',
       icon: AlertOctagon,
       badge: activeFinesCount > 0 ? `${activeFinesCount} FINES` : undefined,
-    },
-    {
-      id: 'register_visitor',
-      label: 'Register Visitor',
-      description: 'Assisted visitor pre-registration with temporary permit',
-      icon: UserPlus,
     },
     {
       id: 'zones',
