@@ -21,7 +21,6 @@ const NAV: Record<UserRole, NavItem[]> = {
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'my_permits', label: 'My Permit' },
     { id: 'vehicles', label: 'Vehicles' },
-    { id: 'register_visitor', label: 'Register Visitor' },
     { id: 'bay_availability', label: 'Parking Zones' },
     { id: 'my_fines', label: 'My Fines' },
     { id: 'notifications', label: 'Notifications' },

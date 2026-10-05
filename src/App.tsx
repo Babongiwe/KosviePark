@@ -85,7 +85,7 @@ export function AppContent() {
         return <VisitorPortal />;
 
       case 'register_visitor':
-        return <VisitorPortal staffMode />;
+        return activeRole === 'admin' ? <VisitorPortal staffMode /> : <StudentDashboard />;
 
       case 'bay_availability':
         return <BayAvailabilityView />;

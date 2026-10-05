@@ -46,12 +46,6 @@ export const SecurityDashboard: React.FC = () => {
       badge: activeFinesCount > 0 ? `${activeFinesCount} FINES` : undefined,
     },
     {
-      id: 'register_visitor',
-      label: 'Register Visitor',
-      description: 'Assisted visitor pre-registration with temporary permit',
-      icon: UserPlus,
-    },
-    {
       id: 'zones',
       label: 'Zone Occupancy',
       description: 'Live bay occupancy across monitored parking zones',
