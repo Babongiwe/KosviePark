@@ -173,6 +173,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentUser]);
 
+  // Automatic permit expiry reminders on sign-in (student / staff)
+  useEffect(() => {
+    if (!currentUser || (currentUser.role !== 'student' && currentUser.role !== 'staff')) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const in30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const mine = permits.filter((p) => p.userId === currentUser.id);
+    const expiredIds = mine.filter((p) => p.status === 'active' && p.expiryDate < today).map((p) => p.id);
+    const soon = mine.filter((p) => p.status === 'active' && p.expiryDate >= today && p.expiryDate <= in30);
+    if (expiredIds.length) {
+      setPermits((prev) => prev.map((p) => (expiredIds.includes(p.id) ? { ...p, status: 'expired' } : p)));
+    }
+    const stamp = new Date().toLocaleString();
+    setNotifications((prev) => {
+      const ids = new Set(prev.map((n) => n.id));
+      const add: NotificationItem[] = [];
+      mine.filter((p) => expiredIds.includes(p.id)).forEach((p) => {
+        const id = `notif-expired-${p.id}`;
+        if (!ids.has(id)) add.push({ id, targetUserId: currentUser.id, title: 'Permit Expired', message: `Your permit ${p.permitNumber} expired on ${p.expiryDate}. Please apply for a renewal.`, type: 'alert', isRead: false, timestamp: stamp });
+      });
+      soon.forEach((p) => {
+        const id = `notif-expiring-${p.id}-${p.expiryDate}`;
+        if (!ids.has(id)) add.push({ id, targetUserId: currentUser.id, title: 'Permit Expiring Soon', message: `Your permit ${p.permitNumber} expires on ${p.expiryDate}. Please renew it before then.`, type: 'alert', isRead: false, timestamp: stamp });
+      });
+      return add.length ? [...add, ...prev] : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
+
   const addToast = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
     setToasts((prev) => [...prev, { id, title, message, type }]);

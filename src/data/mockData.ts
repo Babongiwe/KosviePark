@@ -278,7 +278,7 @@ export const mockPermits: Permit[] = [
     allowedZoneCategories: ['Student Parking'],
     campus: 'Bloemfontein Main Campus',
     issueDate: '2026-02-01',
-    expiryDate: '2026-11-30',
+    expiryDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
     status: 'active',
     qrCodeData: 'KOVSIEPARK:KP-2026-STU-0891:FSK123GP:STUDENT:ACTIVE',
     renewalStatus: 'eligible',
