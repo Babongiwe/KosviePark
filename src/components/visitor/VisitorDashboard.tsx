@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { useMyVisitorRequests } from './VisitorLookup';
 import { StatusBadge } from '../common/StatusBadge';
-import { FilePlus, ClipboardCheck, QrCode, XCircle, Bell, ArrowRight, User } from 'lucide-react';
+import { FilePlus, ClipboardCheck, Bell, ArrowRight, User } from 'lucide-react';
 
 export const VisitorDashboard: React.FC = () => {
   const { currentUser, setCurrentScreen, myNotifications } = useApp();
