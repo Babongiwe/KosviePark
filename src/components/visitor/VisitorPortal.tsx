@@ -22,7 +22,7 @@ interface VisitorPortalProps {
 }
 
 export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false }) => {
-  const { createVisitorReservation, openQRModal, currentUser, activeRole } = useApp();
+  const { createVisitorReservation, currentUser, activeRole, setCurrentScreen } = useApp();
 
   const staffRoleLabel =
     activeRole === 'admin' ? 'Administrator' : activeRole === 'security' ? 'Campus Security' : 'Staff';
@@ -46,7 +46,6 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('15:00');
 
-  const [assignedBay, setAssignedBay] = useState<string>('V-14');
   const [createdPass, setCreatedPass] = useState<any>(null);
 
   const [stepError, setStepError] = useState('');
@@ -96,35 +95,14 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
       visitDate,
       startTime,
       endTime,
-      assignedBayNumber: assignedBay,
+      assignedBayNumber: '',
       ...(staffMode && currentUser
-        ? { registeredByName: currentUser.name, registeredByRole: currentUser.role }
-        : {}),
+        ? { registeredByName: currentUser.name, registeredByRole: currentUser.role, requesterId: undefined }
+        : { requesterId: currentUser?.id }),
     });
 
     setCreatedPass(newRes);
     setStep(5);
-  };
-
-  const handleShowQR = () => {
-    if (!createdPass) return;
-    openQRModal({
-      title: 'UFS Visitor Parking Pass',
-      subtitle: createdPass.reservationCode || createdPass.reservationNumber,
-      code: createdPass.qrCodeData,
-      details: {
-        'Pass Number': createdPass.reservationCode || createdPass.reservationNumber,
-        'Temporary Permit': createdPass.temporaryPermitCode,
-        'Visitor Name': createdPass.visitorName,
-        'Vehicle Plate': createdPass.vehicleRegistration,
-        'Vehicle Model': createdPass.vehicleMakeModel,
-        'Assigned Bay': `Zone V1 • Bay ${createdPass.assignedBayNumber}`,
-        'Visit Date': `${createdPass.visitDate} (${createdPass.startTime} - ${createdPass.endTime})`,
-        'Host Person': `${createdPass.hostPerson} (${createdPass.hostDepartment})`,
-        ...(createdPass.registeredByName ? { 'Registered By': createdPass.registeredByName } : {}),
-        'Status': 'CONFIRMED',
-      },
-    });
   };
 
   return (
@@ -139,10 +117,10 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
           <span className="text-xs text-teal-200">University of the Free State</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight">
-          {staffMode ? 'Register a Campus Visitor' : 'Pre-Register Campus Visitor Parking'}
+          {staffMode ? 'Register a Campus Visitor' : 'Request a Temporary Permit'}
         </h1>
         <p className="text-xs sm:text-sm text-teal-100/80 mt-1">
-          Reserve an allocated visitor bay and receive an automated ALPR pass for boom gate clearance
+          Request a temporary parking permit. An administrator reviews it, reserves a bay in a suitable zone and issues your visitor pass.
         </p>
       </div>
 
@@ -173,8 +151,8 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
             { num: 1, label: 'Visitor' },
             { num: 2, label: 'Vehicle' },
             { num: 3, label: 'Host' },
-            { num: 4, label: 'Slot & Bay' },
-            { num: 5, label: 'Digital Pass' },
+            { num: 4, label: 'Date & Time' },
+            { num: 5, label: 'Submitted' },
           ].map((s) => (
             <div
               key={s.num}
@@ -397,7 +375,7 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
                 onClick={() => goNext(3, 4)}
                 className="flex items-center gap-2 py-2.5 px-6 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold shadow-sm"
               >
-                <span>Next: Bay & Time Slot</span>
+                <span>Next: Date & Time</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -408,8 +386,8 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
         {step === 4 && (
           <div className="space-y-4 text-xs">
             <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 font-heading">Step 4: Campus, Reservation Date & Bay</h3>
-              <p className="text-slate-500">Select your destination UFS campus, arrival date and preferred visitor bay.</p>
+              <h3 className="text-base font-bold text-slate-900 font-heading">Step 4: Campus, Visit Date & Time</h3>
+              <p className="text-slate-500">Select your destination campus and when you will arrive and leave.</p>
             </div>
 
             <div>
@@ -456,28 +434,6 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
               </div>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-2">
-                Select Dedicated Visitor Bay (Zone V1 • Visitor Gateway & Welcome Center)
-              </label>
-              <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
-                {Array.from({ length: 20 }, (_, i) => `V-${String(i + 1).padStart(2, '0')}`).map((bayNum) => (
-                  <button
-                    key={bayNum}
-                    type="button"
-                    onClick={() => setAssignedBay(bayNum)}
-                    className={`p-2.5 rounded-xl border text-center font-mono font-bold transition-all ${
-                      assignedBay === bayNum
-                        ? 'border-teal-700 bg-teal-800 text-white shadow-xs'
-                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
-                    }`}
-                  >
-                    <span className="block text-[10px] opacity-80">BAY</span>
-                    <span className="text-sm">{bayNum}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Summary preview */}
             <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 space-y-1.5 text-teal-950">
@@ -494,8 +450,8 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
                 <span className="font-semibold">{hostPerson} ({hostDepartment})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Allocated Space:</span>
-                <span className="font-bold text-teal-900">Zone V1 • Bay {assignedBay}</span>
+                <span className="text-slate-600">Bay:</span>
+                <span className="font-bold text-teal-900">Assigned by an administrator after approval</span>
               </div>
             </div>
 
@@ -514,96 +470,44 @@ export const VisitorPortal: React.FC<VisitorPortalProps> = ({ staffMode = false 
                 className="flex items-center gap-2 py-2.5 px-6 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold shadow-md"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Confirm & Generate Visitor Pass</span>
+                <span>Submit Temporary Permit Request</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 5: Digital Pass Confirmation */}
+        {/* STEP 5: Request submitted */}
         {step === 5 && createdPass && (
-          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-200">
-            <div className="w-14 h-14 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="text-center space-y-5 animate-in fade-in zoom-in duration-200">
+            <div className="w-14 h-14 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto">
+              <Clock className="w-8 h-8" />
             </div>
-
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest bg-teal-100 text-teal-900 px-3 py-1 rounded-full">
-                RESERVATION CONFIRMED
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-900 px-3 py-1 rounded-full">
+                PENDING REVIEW
               </span>
-              <h2 className="text-2xl font-extrabold text-slate-900 font-heading mt-2">
-                Your Digital Visitor Pass is Ready!
-              </h2>
+              <h2 className="text-2xl font-extrabold text-slate-900 font-heading mt-2">Request Submitted</h2>
               <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                A confirmation has been sent to <strong>{createdPass.visitorEmail}</strong>. Present this pass at the gate or drive up directly for ALPR recognition.
+                Reference <strong className="font-mono">{createdPass.reservationCode}</strong>. An administrator will review it and
+                reserve a bay. You will be notified at <strong>{createdPass.visitorEmail}</strong> once it is approved or rejected.
               </p>
             </div>
-
-            {/* Digital Pass Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-3xl p-6 shadow-2xl max-w-md mx-auto text-left border border-slate-800 space-y-4">
-              <div className="flex items-start justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-teal-400">UFS Visitor Pass</span>
-                  <p className="font-mono text-lg font-bold text-white mt-0.5">
-                    {createdPass.reservationCode || createdPass.reservationNumber}
-                  </p>
-                  <p className="font-mono text-[11px] font-bold text-amber-300 mt-0.5">
-                    Temp Permit: {createdPass.temporaryPermitCode}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-mono font-bold bg-teal-800 text-teal-100 px-2 py-0.5 rounded">
-                    Zone V1 • Bay {createdPass.assignedBayNumber}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center py-2">
-                <SouthAfricanPlate plateNumber={createdPass.vehicleRegistration} size="md" />
-              </div>
-
-              <div className="space-y-1.5 text-xs text-slate-300">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Visitor:</span>
-                  <span className="font-bold text-white">{createdPass.visitorName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Date & Slot:</span>
-                  <span className="font-semibold text-white">
-                    {createdPass.visitDate} ({createdPass.startTime} - {createdPass.endTime})
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Host:</span>
-                  <span className="text-white">{createdPass.hostPerson}</span>
-                </div>
-                {createdPass.registeredByName && (
-                  <div className="flex justify-between border-t border-slate-800 pt-1.5 mt-1.5">
-                    <span className="text-slate-400">Registered by:</span>
-                    <span className="font-semibold text-amber-300">
-                      {createdPass.registeredByName} ({staffRoleLabel})
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleShowQR}
-                className="w-full py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2"
-              >
-                <QrCode className="w-4 h-4" />
-                <span>Show Large QR Code Pass</span>
-              </button>
-            </div>
-
-            <div className="pt-2">
+            <div className="flex flex-wrap justify-center gap-3 text-xs">
+              {!staffMode && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentScreen('visitor_lookup')}
+                  className="py-2.5 px-5 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold"
+                >
+                  View My Request Status
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="text-xs font-bold text-teal-800 hover:text-teal-700 underline"
+                className="py-2.5 px-5 rounded-xl border border-slate-300 text-slate-700 font-bold"
               >
-                Register another visitor reservation
+                Submit another request
               </button>
             </div>
           </div>
