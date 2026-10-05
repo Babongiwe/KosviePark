@@ -46,8 +46,10 @@ const NAV: Record<UserRole, NavItem[]> = {
     { id: 'notifications', label: 'Notifications' },
   ],
   visitor: [
-    { id: 'visitor_portal', label: 'Reserve Parking' },
-    { id: 'visitor_lookup', label: 'My Reservation' },
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'visitor_portal', label: 'Request Permit' },
+    { id: 'visitor_lookup', label: 'My Request & Pass' },
+    { id: 'notifications', label: 'Notifications' },
   ],
 };
 
@@ -84,7 +86,7 @@ export const Navbar: React.FC = () => {
                 </span>
               </span>
             )}
-            {activeRole !== 'visitor' && <NotificationDropdown />}
+            <NotificationDropdown />
             <button
               onClick={logout}
               className="inline-flex items-center gap-2 h-10 px-3 rounded-lg text-[#C8102E] hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors font-bold text-xs cursor-pointer"

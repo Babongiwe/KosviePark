@@ -16,7 +16,7 @@ export const AdminDashboard: React.FC = () => {
 
   const pendingApplications = applications.filter((a) => a.status === 'pending').length;
   const activePermits = permits.filter((p) => p.status === 'active').length;
-  const activeVisitors = visitorReservations.filter((v) => v.status !== 'cancelled').length;
+  const pendingVisitors = visitorReservations.filter((v) => v.status === 'pending').length;
 
   const tiles = [
     {
@@ -41,10 +41,10 @@ export const AdminDashboard: React.FC = () => {
     },
     {
       id: 'visitor_admin',
-      label: 'Visitor Reservations',
-      description: 'Manage visitor pre-registrations and bay assignments',
+      label: 'Visitor Requests',
+      description: 'Approve or reject visitor permits, reserve bays, cancel bookings',
       icon: CalendarCheck,
-      badge: `${activeVisitors} BOOKED`,
+      badge: pendingVisitors > 0 ? `${pendingVisitors} PENDING` : undefined,
     },
     {
       id: 'register_visitor',

@@ -18,6 +18,7 @@ import { GracePeriodManager } from './components/security/GracePeriodManager';
 import { ViolationsManager } from './components/security/ViolationsManager';
 import { VisitorPortal } from './components/visitor/VisitorPortal';
 import { VisitorLookup } from './components/visitor/VisitorLookup';
+import { VisitorDashboard } from './components/visitor/VisitorDashboard';
 import { BayAvailabilityView } from './components/student/BayAvailabilityView';
 import { AccountProfile } from './components/profile/AccountProfile';
 import { NotificationsView } from './components/notifications/NotificationsView';
@@ -46,7 +47,7 @@ export function AppContent() {
       case 'dashboard':
         if (activeRole === 'admin') return <AdminDashboard />;
         if (activeRole === 'security') return <SecurityDashboard />;
-        if (activeRole === 'visitor') return <VisitorPortal />;
+        if (activeRole === 'visitor') return <VisitorDashboard />;
         return <StudentDashboard />;
 
       case 'my_permits':
@@ -106,7 +107,7 @@ export function AppContent() {
       default:
         if (activeRole === 'admin') return <AdminDashboard />;
         if (activeRole === 'security') return <SecurityDashboard />;
-        if (activeRole === 'visitor') return <VisitorPortal />;
+        if (activeRole === 'visitor') return <VisitorDashboard />;
         return <StudentDashboard />;
     }
   };
