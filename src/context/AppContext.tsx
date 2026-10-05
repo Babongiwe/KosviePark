@@ -94,6 +94,8 @@ interface AppContextType {
   // Visitor Actions
   createVisitorReservation: (data: Omit<VisitorReservation, 'id' | 'reservationCode' | 'temporaryPermitCode' | 'qrCodeData' | 'status' | 'createdAt'>) => VisitorReservation;
   cancelVisitorReservation: (reservationCode: string) => boolean;
+  approveVisitorRequest: (id: string, zoneId: string, bayNumber: string) => void;
+  rejectVisitorRequest: (id: string, reason: string) => void;
 
   // ALPR / Security Actions
   simulateALPRScan: (licensePlate: string, zoneId: string) => ALPRScanResult;
@@ -196,7 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveRole(user.role);
     setLastLoginRole(user.role);
     setSessionMessage('');
-    setCurrentScreen(user.role === 'visitor' ? 'visitor_portal' : 'dashboard');
+    setCurrentScreen('dashboard');
     addToast('Welcome Back', `Signed in as ${user.name}`, 'success');
     return 'ok';
   };
@@ -265,7 +267,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phoneNumber: '+27 72 000 1234',
       });
       setActiveRole('visitor');
-      setCurrentScreen('visitor_portal');
+      setCurrentScreen('dashboard');
       addToast('Role Switched', 'Switched view to Campus Visitor', 'info');
       return;
     }
@@ -502,47 +504,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast('Zone Status Updated', `Zone status changed to ${status}.`, 'info');
   };
 
+  const nowStamp = () => new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  // Step 1: visitor submits a request (no bay, no permit yet)
   const createVisitorReservation = (
     data: Omit<VisitorReservation, 'id' | 'reservationCode' | 'temporaryPermitCode' | 'qrCodeData' | 'status' | 'createdAt'>
   ): VisitorReservation => {
     const resCode = `VIS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const tempCode = `TEMP-VIS-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRes: VisitorReservation = {
       ...data,
       id: `vis-res-${Date.now()}`,
       reservationCode: resCode,
-      temporaryPermitCode: tempCode,
-      qrCodeData: `KOVSIEPARK:${resCode}:${data.vehicleRegistration.replace(/\s+/g, '')}:VISITOR:ACTIVE`,
-      status: 'confirmed',
+      requesterId: data.requesterId ?? currentUser?.id,
+      assignedBayNumber: '',
+      qrCodeData: '',
+      status: 'pending',
       createdAt: new Date().toISOString(),
     };
-
     setVisitorReservations((prev) => [newRes, ...prev]);
-
-    // Increase occupied bays for the zone
-    setZones((prev) =>
-      prev.map((z) => (z.id === data.zoneId ? { ...z, occupiedBays: Math.min(z.totalBays, z.occupiedBays + 1) } : z))
-    );
-
-    // Notify Admin and Security
-    const notif: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      targetUserId: 'admin',
-      title: 'Visitor Reservation Confirmed',
-      message: `${data.visitorName} (${data.visitorType}) reserved Bay ${data.assignedBayNumber} in ${data.zoneName} for ${data.visitDate}.`,
-      type: 'visitor_confirmed',
-      isRead: false,
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
-    };
-    setNotifications((prev) => [notif, ...prev]);
-
-    addToast('Reservation Confirmed', `Bay ${data.assignedBayNumber} reserved. Pass code: ${tempCode}`, 'success');
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        targetUserId: 'admin',
+        title: 'New Visitor Permit Request',
+        message: `${data.visitorName} (${data.visitorType}) requested a temporary permit for ${data.visitDate}. Ref ${resCode}.`,
+        type: 'info',
+        isRead: false,
+        timestamp: nowStamp(),
+      },
+      ...prev,
+    ]);
+    addToast('Request Submitted', `Reference ${resCode}. An administrator will review your request.`, 'success');
     return newRes;
+  };
+
+  // Steps 2-6: admin approves, reserves a bay, system issues permit + pass and confirms
+  const approveVisitorRequest = (id: string, zoneId: string, bayNumber: string) => {
+    const res = visitorReservations.find((r) => r.id === id);
+    const zone = zones.find((z) => z.id === zoneId);
+    if (!res || !zone) return;
+    const code = res.reservationCode ?? id;
+    const tempCode = `TEMP-VIS-${code.slice(-4)}`;
+    setVisitorReservations((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status: 'confirmed',
+              zoneId,
+              zoneName: zone.name,
+              assignedBayNumber: bayNumber,
+              temporaryPermitCode: tempCode,
+              qrCodeData: `KOVSIEPARK:${code}:${r.vehicleRegistration.replace(/\s+/g, '')}:VISITOR:ACTIVE`,
+              reviewedBy: currentUser?.name,
+            }
+          : r
+      )
+    );
+    setZones((prev) =>
+      prev.map((z) => (z.id === zoneId ? { ...z, occupiedBays: Math.min(z.totalBays, z.occupiedBays + 1) } : z))
+    );
+    if (res.requesterId) {
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          targetUserId: res.requesterId,
+          title: 'Visitor Permit Approved',
+          message: `Your request ${code} was approved. ${zone.name}, Bay ${bayNumber}. Temporary permit ${tempCode}.`,
+          type: 'visitor_confirmed',
+          isRead: false,
+          timestamp: nowStamp(),
+        },
+        ...prev,
+      ]);
+    }
+    addToast('Request Approved', `Bay ${bayNumber} reserved. Confirmation sent to ${res.visitorEmail}.`, 'success');
+  };
+
+  const rejectVisitorRequest = (id: string, reason: string) => {
+    const res = visitorReservations.find((r) => r.id === id);
+    if (!res) return;
+    setVisitorReservations((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: 'rejected', rejectionReason: reason, reviewedBy: currentUser?.name } : r))
+    );
+    if (res.requesterId) {
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          targetUserId: res.requesterId,
+          title: 'Visitor Permit Rejected',
+          message: `Your request ${res.reservationCode} was rejected. Reason: ${reason}`,
+          type: 'alert',
+          isRead: false,
+          timestamp: nowStamp(),
+        },
+        ...prev,
+      ]);
+    }
+    addToast('Request Rejected', `Rejection sent to ${res.visitorEmail}.`, 'info');
   };
 
   const cancelVisitorReservation = (reservationCode: string): boolean => {
     const reservation = visitorReservations.find(
-      (r) => ((r.reservationCode ?? "").toLowerCase() === reservationCode.toLowerCase() || r.id === reservationCode) && r.status !== 'cancelled'
+      (r) => ((r.reservationCode ?? "").toLowerCase() === reservationCode.toLowerCase() || r.id === reservationCode) && (r.status === 'confirmed' || r.status === 'pending')
     );
     if (!reservation) {
       addToast('Reservation Not Found', 'Could not locate an active reservation with that reference code.', 'error');
@@ -555,8 +619,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Release bay in zone
     setZones((prev) =>
-      prev.map((z) => (z.id === reservation.zoneId ? { ...z, occupiedBays: Math.max(0, z.occupiedBays - 1) } : z))
+      prev.map((z) =>
+        reservation.status === 'confirmed' && z.id === reservation.zoneId
+          ? { ...z, occupiedBays: Math.max(0, z.occupiedBays - 1) }
+          : z
+      )
     );
+    if (reservation.requesterId && reservation.requesterId !== currentUser?.id) {
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now() + 1}`,
+          targetUserId: reservation.requesterId,
+          title: 'Visitor Reservation Cancelled',
+          message: `Your reservation ${reservation.reservationCode} was cancelled by an administrator.`,
+          type: 'visitor_cancelled',
+          isRead: false,
+          timestamp: nowStamp(),
+        },
+        ...prev,
+      ]);
+    }
 
     // Notification
     const notif: NotificationItem = {
@@ -954,6 +1036,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleZoneStatus,
         createVisitorReservation,
         cancelVisitorReservation,
+        approveVisitorRequest,
+        rejectVisitorRequest,
         simulateALPRScan,
         escalateGracePeriodToFine,
         resolveViolation,

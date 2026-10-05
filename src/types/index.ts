@@ -158,7 +158,10 @@ export interface VisitorReservation {
   assignedBayNumber: number | string;
   temporaryPermitCode?: string;
   qrCodeData: string;
-  status: 'confirmed' | 'checked_in' | 'checked-in' | 'cancelled' | 'expired';
+  status: 'pending' | 'rejected' | 'confirmed' | 'checked_in' | 'checked-in' | 'cancelled' | 'expired';
+  requesterId?: string;
+  rejectionReason?: string;
+  reviewedBy?: string;
   createdAt?: string;
   registeredByName?: string;
   registeredByRole?: UserRole;
