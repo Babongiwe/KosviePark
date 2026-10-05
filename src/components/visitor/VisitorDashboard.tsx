@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { useMyVisitorRequests } from './VisitorLookup';
 import { StatusBadge } from '../common/StatusBadge';
-import { FilePlus, ClipboardCheck, QrCode, XCircle, Bell, ArrowRight, User } from 'lucide-react';
+import { FilePlus, ClipboardCheck, Bell, ArrowRight, User } from 'lucide-react';
 
 export const VisitorDashboard: React.FC = () => {
   const { currentUser, setCurrentScreen, myNotifications } = useApp();
@@ -15,18 +15,13 @@ export const VisitorDashboard: React.FC = () => {
     { id: 'visitor_portal', label: 'Request Temporary Permit', description: 'Give your details and vehicle info', icon: FilePlus },
     {
       id: 'visitor_lookup',
-      label: 'My Request Status',
-      description: 'Pending, approved or rejected (with reason)',
+      label: 'My Request, Bay & Pass',
+      description: active
+        ? `${active.status.toUpperCase()} • ${active.zoneName} • Bay ${active.assignedBayNumber} — view pass or cancel`
+        : 'Track your request status, see your bay & pass once approved, or cancel',
       icon: ClipboardCheck,
       badge: latest ? latest.status.toUpperCase() : undefined,
     },
-    {
-      id: 'visitor_lookup',
-      label: 'My Bay & Pass',
-      description: active ? `${active.zoneName} • Bay ${active.assignedBayNumber}` : 'Shown here once approved',
-      icon: QrCode,
-    },
-    { id: 'visitor_lookup', label: 'Cancel Reservation', description: 'Release your bay if plans change', icon: XCircle },
     {
       id: 'notifications',
       label: 'Notifications',
