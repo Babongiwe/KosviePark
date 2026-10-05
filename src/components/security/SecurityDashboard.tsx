@@ -5,7 +5,6 @@ import {
   Search,
   Timer,
   AlertOctagon,
-  UserPlus,
   MapPin,
   Bell,
   Shield,
