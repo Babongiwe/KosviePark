@@ -55,7 +55,6 @@ export const AuthScreens: React.FC = () => {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regIdNum, setRegIdNum] = useState('');
-  const [regFaculty, setRegFaculty] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
