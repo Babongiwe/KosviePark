@@ -54,7 +54,6 @@ export const AuthScreens: React.FC = () => {
   // Register form state
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('student');
   const [regIdNum, setRegIdNum] = useState('');
   const [regFaculty, setRegFaculty] = useState('');
   const [regPhone, setRegPhone] = useState('');
