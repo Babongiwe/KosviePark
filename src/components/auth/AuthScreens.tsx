@@ -357,7 +357,8 @@ export const AuthScreens: React.FC = () => {
 
                 <div className="p-3 bg-[#e8f0fe] border border-[#2672ec]/20 rounded-sm text-left">
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    <strong className="text-[#0067b8] font-bold">First-time students, staff and visitors:</strong> click Create an Account below. Administrator and Security accounts are created by the university.
+                    <strong className="text-[#0067b8] font-bold">First-time visitors:</strong> click Create an Account below.
+
                   </p>
                 </div>
 
