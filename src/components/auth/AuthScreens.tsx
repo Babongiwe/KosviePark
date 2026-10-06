@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { UserRole } from '../../types';
 import {
   Eye,
   EyeOff,
@@ -54,9 +53,7 @@ export const AuthScreens: React.FC = () => {
   // Register form state
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('student');
   const [regIdNum, setRegIdNum] = useState('');
-  const [regFaculty, setRegFaculty] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
@@ -146,15 +143,15 @@ export const AuthScreens: React.FC = () => {
       id: `usr-reg-${Date.now()}`,
       name: regName.trim(),
       email: regEmail.trim(),
-      role: regRole,
+      role: 'visitor',
       identifierNumber: regIdNum.trim(),
-      departmentOrFaculty: regRole === 'visitor' ? 'Visitor Services' : regFaculty || 'Faculty of Natural & Agricultural Sciences',
+      departmentOrFaculty: 'Visitor Services',
       phoneNumber: regPhone.trim(),
     });
     addToast('Account Created', `Welcome to KovsiePark, ${regName}! Please sign in with your ID number and password.`, 'success');
     setIdentifierInput(regIdNum.trim());
     setPassword(regPassword);
-    setSelectedRoleTab(regRole);
+    setSelectedRoleTab('visitor');
     setAuthView('login');
   };
 
@@ -348,9 +345,11 @@ export const AuthScreens: React.FC = () => {
 
               {/* 
                 NEED ACCESS? Section & Registration below Sign In button
-                Explicitly instructing first-time users and Visitors to click Create an account
+                Only shown on the Visitor tab
               */}
               <div className="pt-2 text-center space-y-3">
+                {selectedRoleTab === 'visitor' && (
+                  <>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   NEED ACCESS?
                 </span>
@@ -371,6 +370,8 @@ export const AuthScreens: React.FC = () => {
                   <UserPlus className="w-4 h-4 text-[#2672ec] group-hover:scale-110 transition-transform" />
                   <span>Create an Account</span>
                 </button>
+                  </>
+                )}
 
                 <p className="text-[11px] text-slate-600 pt-1">
                   Trouble signing in?{' '}
@@ -391,7 +392,7 @@ export const AuthScreens: React.FC = () => {
             <div className="space-y-5">
               <div className="text-center">
                 <h2 className="text-2xl font-extrabold text-[#101010] font-serif tracking-tight">
-                  Create an Account
+                  Create a Visitor Account
                 </h2>
                 <p className="text-xs text-slate-600 mt-1">
                   Register to request KovsiePark parking clearance.
@@ -419,35 +420,21 @@ export const AuthScreens: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-[#0067b8] mb-1">User Category *</label>
-                    <select
-                      value={regRole}
-                      onChange={(e) => setRegRole(e.target.value as UserRole)}
-                      className="w-full px-3 py-2.5 bg-[#e8f0fe] border border-slate-300 rounded-sm text-xs font-semibold text-[#101010] focus:outline-none focus:border-[#101010] focus:ring-1 focus:ring-[#101010]"
-                    >
-                      <option value="student">Student</option>
-                      <option value="staff">Staff Member</option>
-                      <option value="visitor">Visitor</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#0067b8] mb-1">
-                      ID / Passport No. *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      inputMode="numeric"
-                      maxLength={13}
-                      value={regIdNum}
-                      onChange={(e) => setRegIdNum(e.target.value.replace(/\D/g, '').slice(0, 13))}
-                      placeholder="13 digits e.g. 9901015000087"
-                      className="w-full px-3 py-2.5 bg-[#e8f0fe] border border-slate-300 rounded-sm text-xs font-mono text-[#101010] focus:outline-none focus:border-[#101010] focus:ring-1 focus:ring-[#101010]"
-                    />
-                    <p className="mt-1 text-[10px] text-slate-500">{regIdNum.length}/13 digits</p>
-                  </div>
+                <div>
+                  <label className="block font-bold text-[#0067b8] mb-1">
+                    ID / Passport No. *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    maxLength={13}
+                    value={regIdNum}
+                    onChange={(e) => setRegIdNum(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                    placeholder="13 digits e.g. 9901015000087"
+                    className="w-full px-3 py-2.5 bg-[#e8f0fe] border border-slate-300 rounded-sm text-xs font-mono text-[#101010] focus:outline-none focus:border-[#101010] focus:ring-1 focus:ring-[#101010]"
+                  />
+                  <p className="mt-1 text-[10px] text-slate-500">{regIdNum.length}/13 digits</p>
                 </div>
 
                 <div>
