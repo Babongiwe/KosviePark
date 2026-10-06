@@ -145,15 +145,15 @@ export const AuthScreens: React.FC = () => {
       id: `usr-reg-${Date.now()}`,
       name: regName.trim(),
       email: regEmail.trim(),
-      role: regRole,
+      role: 'visitor',
       identifierNumber: regIdNum.trim(),
-      departmentOrFaculty: regRole === 'visitor' ? 'Visitor Services' : regFaculty || 'Faculty of Natural & Agricultural Sciences',
+      departmentOrFaculty: 'Visitor Services',
       phoneNumber: regPhone.trim(),
     });
     addToast('Account Created', `Welcome to KovsiePark, ${regName}! Please sign in with your ID number and password.`, 'success');
     setIdentifierInput(regIdNum.trim());
     setPassword(regPassword);
-    setSelectedRoleTab(regRole);
+    setSelectedRoleTab('visitor');
     setAuthView('login');
   };
 
