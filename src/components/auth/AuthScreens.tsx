@@ -348,9 +348,11 @@ export const AuthScreens: React.FC = () => {
 
               {/* 
                 NEED ACCESS? Section & Registration below Sign In button
-                Explicitly instructing first-time users and Visitors to click Create an account
+                Only shown on the Visitor tab
               */}
               <div className="pt-2 text-center space-y-3">
+                {selectedRoleTab === 'visitor' && (
+                  <>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   NEED ACCESS?
                 </span>
@@ -371,6 +373,8 @@ export const AuthScreens: React.FC = () => {
                   <UserPlus className="w-4 h-4 text-[#2672ec] group-hover:scale-110 transition-transform" />
                   <span>Create an Account</span>
                 </button>
+                  </>
+                )}
 
                 <p className="text-[11px] text-slate-600 pt-1">
                   Trouble signing in?{' '}
