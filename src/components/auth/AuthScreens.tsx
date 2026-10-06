@@ -394,7 +394,7 @@ export const AuthScreens: React.FC = () => {
             <div className="space-y-5">
               <div className="text-center">
                 <h2 className="text-2xl font-extrabold text-[#101010] font-serif tracking-tight">
-                  Create an Account
+                  Create a Visitor Account
                 </h2>
                 <p className="text-xs text-slate-600 mt-1">
                   Register to request KovsiePark parking clearance.
